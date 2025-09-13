@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .chat-bubble {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🎓</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Smart Campus Assistant</h1>
+                        <p class="text-blue-100 text-sm">Your AI-powered campus guide</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 text-sm">
+                    <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Quick Actions Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm border p-6 sticky top-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button onclick="sendQuickQuery('class schedule')" class="quick-action w-full text-left p-3 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">📅</span>
+                                <span class="text-sm font-medium text-blue-800">Class Schedule</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="sendQuickQuery('dining halls')" class="quick-action w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">🍽️</span>
+                                <span class="text-sm font-medium text-green-800">Dining Options</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="sendQuickQuery('library hours')" class="quick-action w-full text-left p-3 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">📚</span>
+                                <span class="text-sm font-medium text-purple-800">Library Services</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="sendQuickQuery('campus facilities')" class="quick-action w-full text-left p-3 rounded-lg bg-orange-50 hover:bg-orange-100 border border-orange-200 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">🏢</span>
+                                <span class="text-sm font-medium text-orange-800">Facilities</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="sendQuickQuery('registration help')" class="quick-action w-full text-left p-3 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">📋</span>
+                                <span class="text-sm font-medium text-red-800">Registration</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <h4 class="font-medium text-gray-700 mb-2">Campus Status</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Library</span>
+                                <span class="text-green-600 font-medium">Open</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Dining Halls</span>
+                                <span class="text-green-600 font-medium">Open</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Gym</span>
+                                <span class="text-yellow-600 font-medium">Limited</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-sm border h-[600px] flex flex-col">
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-gray-200 bg-gray-50 rounded-t-xl">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-bold">AI</span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Campus Assistant</h3>
+                                <p class="text-xs text-gray-500">Ask me anything about campus!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div class="chat-bubble flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-sm font-bold">AI</span>
+                            </div>
+                            <div class="bg-gray-100 rounded-lg p-3 max-w-md">
+                                <p class="text-gray-800">Hi! I'm your Smart Campus Assistant. I can help you with:</p>
+                                <ul class="mt-2 text-sm text-gray-600 space-y-1">
+                                    <li>• Class schedules and academic calendar</li>
+                                    <li>• Dining hall menus and hours</li>
+                                    <li>• Library services and study spaces</li>
+                                    <li>• Campus facilities and locations</li>
+                                    <li>• Registration and administrative procedures</li>
+                                </ul>
+                                <p class="mt-2 text-gray-800">What would you like to know?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="flex space-x-3">
+                            <input 
+                                type="text" 
+                                id="messageInput" 
+                                placeholder="Ask about schedules, dining, library, facilities..."
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                onkeypress="handleKeyPress(event)"
+                            >
+                            <button 
+                                onclick="sendMessage()" 
+                                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all font-medium"
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Campus database simulation
+        const campusData = {
+            schedules: {
+                'computer science': {
+                    'CS101': 'Mon/Wed/Fri 9:00-10:00 AM, Room: Tech Building 201',
+                    'CS201': 'Tue/Thu 2:00-3:30 PM, Room: Tech Building 305',
+                    'CS301': 'Mon/Wed 11:00-12:30 PM, Room: Tech Building 401'
+                },
+                'mathematics': {
+                    'MATH101': 'Mon/Wed/Fri 10:00-11:00 AM, Room: Science Hall 102',
+                    'MATH201': 'Tue/Thu 9:00-10:30 AM, Room: Science Hall 205'
+                }
+            },
+            dining: {
+                'main hall': {
+                    hours: 'Mon-Sun: 7:00 AM - 10:00 PM',
+                    menu: ['Pizza', 'Salad Bar', 'Grilled Chicken', 'Vegetarian Options', 'Fresh Fruit'],
+                    location: 'Student Union Building, 1st Floor'
+                },
+                'campus cafe': {
+                    hours: 'Mon-Fri: 7:00 AM - 6:00 PM',
+                    menu: ['Coffee', 'Sandwiches', 'Pastries', 'Smoothies'],
+                    location: 'Library Building, Ground Floor'
+                }
+            },
+            library: {
+                hours: 'Mon-Thu: 7:00 AM - 12:00 AM, Fri-Sat: 7:00 AM - 10:00 PM, Sun: 10:00 AM - 12:00 AM',
+                services: ['Book Checkout', 'Study Rooms', 'Computer Lab', 'Printing Services', 'Research Help'],
+                floors: {
+                    '1st Floor': 'Reference, Circulation Desk, Computer Lab',
+                    '2nd Floor': 'Quiet Study Area, Individual Study Carrels',
+                    '3rd Floor': 'Group Study Rooms, Collaborative Spaces',
+                    '4th Floor': 'Silent Study Zone, Graduate Study Area'
+                }
+            },
+            facilities: {
+                'fitness center': {
+                    hours: 'Mon-Fri: 6:00 AM - 11:00 PM, Weekends: 8:00 AM - 9:00 PM',
+                    amenities: ['Cardio Equipment', 'Weight Room', 'Group Fitness Classes', 'Swimming Pool'],
+                    location: 'Recreation Center'
+                },
+                'student health center': {
+                    hours: 'Mon-Fri: 8:00 AM - 5:00 PM',
+                    services: ['Medical Care', 'Mental Health Services', 'Pharmacy', 'Health Education'],
+                    location: 'Health Services Building'
+                }
+            },
+            administration: {
+                'registration': {
+                    office: 'Registrar Office, Admin Building Room 150',
+                    hours: 'Mon-Fri: 8:00 AM - 5:00 PM',
+                    services: ['Course Registration', 'Transcript Requests', 'Grade Changes', 'Graduation Applications']
+                },
+                'financial aid': {
+                    office: 'Financial Aid Office, Admin Building Room 200',
+                    hours: 'Mon-Fri: 8:00 AM - 4:30 PM',
+                    services: ['FAFSA Help', 'Scholarship Information', 'Loan Counseling', 'Work-Study Programs']
+                }
+            }
+        };
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendQuickQuery(query) {
+            const input = document.getElementById('messageInput');
+            input.value = query;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI response delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateResponse(message);
+                addMessage(response, 'ai');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessage(message, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-bubble flex items-start space-x-3';
+
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex-1"></div>
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-3 max-w-md">
+                        <p>${message}</p>
+                    </div>
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-gray-600 text-sm font-bold">You</span>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-sm font-bold">AI</span>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-md">
+                        <div>${message}</div>
+                    </div>
+                `;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'flex items-start space-x-3';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white text-sm font-bold">AI</span>
+                </div>
+                <div class="bg-gray-100 rounded-lg p-3">
+                    <div class="typing-indicator flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function generateResponse(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Schedule queries
+            if (lowerQuery.includes('schedule') || lowerQuery.includes('class')) {
+                if (lowerQuery.includes('computer science') || lowerQuery.includes('cs')) {
+                    return formatScheduleResponse('Computer Science', campusData.schedules['computer science']);
+                } else if (lowerQuery.includes('math')) {
+                    return formatScheduleResponse('Mathematics', campusData.schedules['mathematics']);
+                } else {
+                    return `<p class="font-medium text-gray-800 mb-2">📅 Class Schedules Available:</p>
+                            <div class="space-y-2">
+                                <div class="bg-blue-50 p-2 rounded">
+                                    <strong>Computer Science:</strong><br>
+                                    CS101: Mon/Wed/Fri 9:00-10:00 AM<br>
+                                    CS201: Tue/Thu 2:00-3:30 PM<br>
+                                    CS301: Mon/Wed 11:00-12:30 PM
+                                </div>
+                                <div class="bg-green-50 p-2 rounded">
+                                    <strong>Mathematics:</strong><br>
+                                    MATH101: Mon/Wed/Fri 10:00-11:00 AM<br>
+                                    MATH201: Tue/Thu 9:00-10:30 AM
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-600">Ask about a specific department for more details!</p>`;
+                }
+            }
+            
+            // Dining queries
+            if (lowerQuery.includes('dining') || lowerQuery.includes('food') || lowerQuery.includes('eat') || lowerQuery.includes('meal')) {
+                return `<p class="font-medium text-gray-800 mb-2">🍽️ Dining Options:</p>
+                        <div class="space-y-3">
+                            <div class="bg-green-50 p-3 rounded-lg">
+                                <strong class="text-green-800">Main Dining Hall</strong><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.dining['main hall'].hours}</span><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.dining['main hall'].location}</span><br>
+                                <span class="text-sm">Today's Menu: ${campusData.dining['main hall'].menu.join(', ')}</span>
+                            </div>
+                            <div class="bg-yellow-50 p-3 rounded-lg">
+                                <strong class="text-yellow-800">Campus Café</strong><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.dining['campus cafe'].hours}</span><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.dining['campus cafe'].location}</span><br>
+                                <span class="text-sm">Menu: ${campusData.dining['campus cafe'].menu.join(', ')}</span>
+                            </div>
+                        </div>`;
+            }
+            
+            // Library queries
+            if (lowerQuery.includes('library') || lowerQuery.includes('study') || lowerQuery.includes('book')) {
+                return `<p class="font-medium text-gray-800 mb-2">📚 Library Information:</p>
+                        <div class="bg-purple-50 p-3 rounded-lg space-y-2">
+                            <div><strong>Hours:</strong> ${campusData.library.hours}</div>
+                            <div><strong>Services:</strong> ${campusData.library.services.join(', ')}</div>
+                            <div class="mt-3">
+                                <strong>Floor Guide:</strong>
+                                <ul class="mt-1 text-sm space-y-1">
+                                    ${Object.entries(campusData.library.floors).map(([floor, desc]) => 
+                                        `<li><strong>${floor}:</strong> ${desc}</li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Need help finding a specific resource? Just ask!</p>`;
+            }
+            
+            // Facilities queries
+            if (lowerQuery.includes('facilities') || lowerQuery.includes('gym') || lowerQuery.includes('fitness') || lowerQuery.includes('health')) {
+                return `<p class="font-medium text-gray-800 mb-2">🏢 Campus Facilities:</p>
+                        <div class="space-y-3">
+                            <div class="bg-orange-50 p-3 rounded-lg">
+                                <strong class="text-orange-800">Fitness Center</strong><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.facilities['fitness center'].hours}</span><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.facilities['fitness center'].location}</span><br>
+                                <span class="text-sm">Amenities: ${campusData.facilities['fitness center'].amenities.join(', ')}</span>
+                            </div>
+                            <div class="bg-red-50 p-3 rounded-lg">
+                                <strong class="text-red-800">Student Health Center</strong><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.facilities['student health center'].hours}</span><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.facilities['student health center'].location}</span><br>
+                                <span class="text-sm">Services: ${campusData.facilities['student health center'].services.join(', ')}</span>
+                            </div>
+                        </div>`;
+            }
+            
+            // Registration/Administrative queries
+            if (lowerQuery.includes('registration') || lowerQuery.includes('register') || lowerQuery.includes('admin') || lowerQuery.includes('financial aid')) {
+                return `<p class="font-medium text-gray-800 mb-2">📋 Administrative Services:</p>
+                        <div class="space-y-3">
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <strong class="text-blue-800">Registration Office</strong><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.administration.registration.office}</span><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.administration.registration.hours}</span><br>
+                                <span class="text-sm">Services: ${campusData.administration.registration.services.join(', ')}</span>
+                            </div>
+                            <div class="bg-indigo-50 p-3 rounded-lg">
+                                <strong class="text-indigo-800">Financial Aid Office</strong><br>
+                                <span class="text-sm text-gray-600">Location: ${campusData.administration['financial aid'].office}</span><br>
+                                <span class="text-sm text-gray-600">Hours: ${campusData.administration['financial aid'].hours}</span><br>
+                                <span class="text-sm">Services: ${campusData.administration['financial aid'].services.join(', ')}</span>
+                            </div>
+                        </div>`;
+            }
+            
+            // Default response
+            return `<p>I'd be happy to help you with campus information! I can assist with:</p>
+                    <ul class="mt-2 text-sm space-y-1">
+                        <li>📅 <strong>Schedules:</strong> Class times and academic calendar</li>
+                        <li>🍽️ <strong>Dining:</strong> Meal plans, hours, and menus</li>
+                        <li>📚 <strong>Library:</strong> Hours, services, and study spaces</li>
+                        <li>🏢 <strong>Facilities:</strong> Gym, health center, and other campus buildings</li>
+                        <li>📋 <strong>Administration:</strong> Registration, financial aid, and procedures</li>
+                    </ul>
+                    <p class="mt-2 text-sm text-gray-600">Try asking something like "What are the library hours?" or "Show me dining options"</p>`;
+        }
+
+        function formatScheduleResponse(department, schedules) {
+            const scheduleItems = Object.entries(schedules).map(([course, details]) => 
+                `<div class="bg-blue-50 p-2 rounded mb-1">
+                    <strong>${course}:</strong> ${details}
+                </div>`
+            ).join('');
+            
+            return `<p class="font-medium text-gray-800 mb-2">📅 ${department} Schedule:</p>
+                    <div class="space-y-1">${scheduleItems}</div>
+                    <p class="mt-2 text-sm text-gray-600">Need information about other departments? Just ask!</p>`;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e5d2ed423b9f47',t:'MTc1Nzc0NzQxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
